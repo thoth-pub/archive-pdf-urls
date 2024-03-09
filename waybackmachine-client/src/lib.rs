@@ -1,5 +1,7 @@
+pub mod archivableurl;
 pub mod errors;
 
+pub use crate::archivableurl::ArchivableUrl;
 pub use crate::errors::Error;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
@@ -89,7 +91,8 @@ impl WaybackMachineClient {
     /// # }
     /// ```
     pub async fn archive_url(&self, url: &str) -> Result<(), Error> {
-        let to_archive = Url::parse(url).map_err(|_| Error::InvalidUrl(url.to_string()))?;
+        let to_archive = ArchivableUrl::parse(url)?;
+
         let response = self
             .http_client
             .get(format!("{}{}", self.client_config.endpoint, to_archive))
@@ -150,16 +153,16 @@ mod tests {
         );
     }
 
-    // #[tokio::test]
-    // async fn test_archive_url_local_url() {
-    //     let to_archive = "http://localhost/page";
-    //     let wayback_client = WaybackMachineClient::new(ClientConfig::default());
-    //
-    //     assert_eq!(
-    //         wayback_client.archive_url(to_archive).await.err().unwrap(),
-    //         Error::InvalidHost("localhost".to_string(), to_archive.to_string())
-    //     );
-    // }
+    #[tokio::test]
+    async fn test_archive_url_local_url() {
+        let to_archive = "http://localhost/page";
+        let wayback_client = WaybackMachineClient::new(ClientConfig::default());
+
+        assert_eq!(
+            wayback_client.archive_url(to_archive).await.err().unwrap(),
+            Error::InvalidUrl(to_archive.to_string())
+        );
+    }
 
     #[tokio::test]
     async fn test_archive_url_failure() {

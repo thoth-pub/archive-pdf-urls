@@ -6,7 +6,6 @@ pub enum Error {
     InvalidUrl(String),
     RequestFailed(String),
     CannotArchive(String, String),
-    InvalidHost(String, String),
 }
 
 impl fmt::Display for Error {
@@ -15,7 +14,6 @@ impl fmt::Display for Error {
             Error::InvalidUrl(input) => write!(f, "Invalid URL: {}", input),
             Error::RequestFailed(err) => write!(f, "Request failed: {}", err),
             Error::CannotArchive(code, url) => write!(f, "Failed ({}): {}", code, url),
-            Error::InvalidHost(url, host) => write!(f, "Invalid host \"{}\": {}", host, url),
         }
     }
 }
