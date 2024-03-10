@@ -165,11 +165,13 @@ impl WaybackMachineClient {
     /// `check_recent_archive_exists`. If an archive does not exist or is older than the
     /// configured archive threshold, it proceeds to archive the URL.
     ///
+    /// It returns an `ArchiveResult::Archived` if it archives the URL,
+    /// or an `ArchiveResult::RecentArchiveExists` if a recent archive already exists.
+    ///
     /// # Errors
     ///
     /// This method fails if the `url` provided is not well formatted
-    /// of if there was an error while sending the request. If a recent archive
-    /// already exists, it returns an `Error::RecentArchiveExists`.
+    /// of if there was an error while sending the request.
     ///
     /// # Example
     /// ```
@@ -361,6 +363,62 @@ mod tests {
             .check_recent_archive_exists(to_archive)
             .await
             .is_ok());
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_check_recent_archive_exists_old_snapshot() {
+        let to_archive = "https://example.com/";
+        let snapshot_timestamp = (Utc::now() - TimeDelta::try_days(100).unwrap())
+            .format("%Y%m%d%H%M%S")
+            .to_string();
+        let (mut server, wayback_client) = mock_server().await;
+
+        let snapshot: Value = json!({
+            "url": to_archive,
+            "archived_snapshots": {
+                "closest": {
+                    "status": "200",
+                    "available": true,
+                    "url": format!("http://web.archive.org/web/{}/{}", snapshot_timestamp, to_archive),
+                    "timestamp": snapshot_timestamp
+                }
+            }
+        });
+        let mock = server
+            .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
+            .with_status(200)
+            .with_body(snapshot.to_string())
+            .create_async()
+            .await;
+
+        assert!(wayback_client
+            .check_recent_archive_exists(to_archive)
+            .await
+            .is_err());
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_check_recent_archive_exists_no_snapshot() {
+        let to_archive = "https://example.com/";
+        let (mut server, wayback_client) = mock_server().await;
+
+        let snapshot: Value = json!({
+            "url": to_archive,
+            "archived_snapshots": {}
+        });
+        let mock = server
+            .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
+            .with_status(200)
+            .with_body(snapshot.to_string())
+            .create_async()
+            .await;
+
+        assert!(wayback_client
+            .check_recent_archive_exists(to_archive)
+            .await
+            .is_err());
         mock.assert_async().await;
     }
 }
