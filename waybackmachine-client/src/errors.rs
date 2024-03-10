@@ -6,6 +6,9 @@ pub enum Error {
     InvalidUrl(String),
     RequestFailed(String),
     CannotArchive(String, String),
+    CannotCheckArchive(String),
+    NoRecentArchive(String),
+    RecentArchiveExists(String),
 }
 
 impl fmt::Display for Error {
@@ -14,6 +17,9 @@ impl fmt::Display for Error {
             Error::InvalidUrl(input) => write!(f, "Invalid URL: {}", input),
             Error::RequestFailed(err) => write!(f, "Request failed: {}", err),
             Error::CannotArchive(code, url) => write!(f, "Failed ({}): {}", code, url),
+            Error::CannotCheckArchive(error) => write!(f, "Failed to get archive: {}", error),
+            Error::NoRecentArchive(url) => write!(f, "No recent archive exists: {}", url),
+            Error::RecentArchiveExists(url) => write!(f, "Skipped: {}", url),
         }
     }
 }
@@ -21,5 +27,17 @@ impl fmt::Display for Error {
 impl From<reqwest_middleware::Error> for Error {
     fn from(err: reqwest_middleware::Error) -> Self {
         Error::RequestFailed(err.to_string())
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Self {
+        Error::RequestFailed(err.to_string())
+    }
+}
+
+impl From<chrono::ParseError> for Error {
+    fn from(err: chrono::ParseError) -> Self {
+        Error::CannotCheckArchive(err.to_string())
     }
 }
