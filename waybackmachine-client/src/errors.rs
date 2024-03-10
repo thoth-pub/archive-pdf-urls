@@ -8,7 +8,6 @@ pub enum Error {
     CannotArchive(String, String),
     CannotCheckArchive(String),
     NoRecentArchive(String),
-    RecentArchiveExists(String),
 }
 
 impl fmt::Display for Error {
@@ -19,7 +18,6 @@ impl fmt::Display for Error {
             Error::CannotArchive(code, url) => write!(f, "Failed ({}): {}", code, url),
             Error::CannotCheckArchive(error) => write!(f, "Failed to get archive: {}", error),
             Error::NoRecentArchive(url) => write!(f, "No recent archive exists: {}", url),
-            Error::RecentArchiveExists(url) => write!(f, "Skipped: {}", url),
         }
     }
 }

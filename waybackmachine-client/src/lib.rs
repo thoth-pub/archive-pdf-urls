@@ -197,10 +197,13 @@ impl WaybackMachineClient {
             .send()
             .await?;
         if !response.status().is_success() {
-            return Err(Error::CannotArchive(
-                response.status().to_string(),
-                url.to_string(),
-            ));
+            // check just in case the request returns a false negative
+            if self.check_recent_archive_exists(url).await.is_err() {
+                return Err(Error::CannotArchive(
+                    response.status().to_string(),
+                    url.to_string(),
+                ));
+            }
         }
         Ok(ArchiveResult::Archived(response.url().to_string()))
     }
@@ -314,10 +317,18 @@ mod tests {
             .expect_at_least(MAX_REQUEST_RETRIES as usize)
             .create_async()
             .await;
+        // checking if it actually was archived after receiving an archiving error
+        let mock3 = server
+            .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
+            .with_status(200)
+            .with_body(snapshot.to_string())
+            .create_async()
+            .await;
 
         assert!(wayback_client.archive_url(to_archive).await.is_err());
         mock1.assert_async().await;
         mock2.assert_async().await;
+        mock3.assert_async().await;
     }
 
     #[tokio::test]
