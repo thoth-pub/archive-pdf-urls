@@ -36,6 +36,7 @@ struct ArchivedSnapshot {
     status: String,
     available: bool,
     timestamp: String,
+    url: String,
 }
 
 /// Configuration for the Wayback Machine client
@@ -45,6 +46,12 @@ pub struct ClientConfig {
     retry_policy: ExponentialBackoff,
     archive_threshold_timestamp: NaiveDateTime,
     user_agent: String,
+}
+
+/// Status of the archive request
+pub enum ArchiveResult {
+    Archived(String),
+    RecentArchiveExists(String),
 }
 
 impl ClientConfig {
@@ -121,7 +128,7 @@ impl WaybackMachineClient {
     ///
     /// https://archive.org/help/wayback_api.php
     ///
-    async fn check_recent_archive_exists(&self, url: &str) -> Result<(), Error> {
+    async fn check_recent_archive_exists(&self, url: &str) -> Result<String, Error> {
         let to_check = ArchivableUrl::parse(url)?;
         let response = self
             .http_client
@@ -144,7 +151,7 @@ impl WaybackMachineClient {
                     && snapshot.available
                     && snapshot.status.eq("200")
                 {
-                    return Ok(());
+                    return Ok(snapshot.url.clone());
                 }
             }
         }
@@ -174,11 +181,11 @@ impl WaybackMachineClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn archive_url(&self, url: &str) -> Result<(), Error> {
+    pub async fn archive_url(&self, url: &str) -> Result<ArchiveResult, Error> {
         let to_archive = ArchivableUrl::parse(url)?;
 
-        if self.check_recent_archive_exists(url).await.is_ok() {
-            return Err(Error::RecentArchiveExists(url.to_string()));
+        if let Ok(recent_archive_url) = self.check_recent_archive_exists(url).await {
+            return Ok(ArchiveResult::RecentArchiveExists(recent_archive_url));
         }
 
         let response = self
@@ -195,7 +202,7 @@ impl WaybackMachineClient {
                 url.to_string(),
             ));
         }
-        Ok(())
+        Ok(ArchiveResult::Archived(response.url().to_string()))
     }
 }
 
