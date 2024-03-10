@@ -1,6 +1,6 @@
 [package]
 name = "archive-url"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Javier Arias <javi@openbookpublishers.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -14,4 +14,4 @@ members = ["waybackmachine-client"]
 env_logger = "0.11.3"
 log = "0.4.21"
 tokio = { version = "1.36.0", features = ["full"] }
-waybackmachine-client = { version = "0.1.0", path = "waybackmachine-client"}
+waybackmachine-client = { version = "1.0.0", path = "waybackmachine-client"}

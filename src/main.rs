@@ -10,6 +10,7 @@ async fn main() {
 
     let client = WaybackMachineClient::new(ClientConfig::default());
 
+    let mut exit_code = 0;
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let url = line.expect("Failed to read line from standard input");
@@ -20,7 +21,12 @@ async fn main() {
             Ok(ArchiveResult::RecentArchiveExists(archive_url)) => {
                 info!("Skipped: {} – {}", url, archive_url)
             }
-            Err(e) => error!("{}", e),
+            Err(e) => {
+                error!("{}", e);
+                // Set exit code to failure (1) if any URL fails to archive
+                exit_code = 1;
+            },
         }
     }
+    std::process::exit(exit_code);
 }
