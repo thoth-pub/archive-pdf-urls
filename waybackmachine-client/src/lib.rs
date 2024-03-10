@@ -58,13 +58,10 @@ impl ClientConfig {
     ) -> Self {
         ClientConfig {
             archive_endpoint: Url::parse(&archive_endpoint)
-                .expect(&format!(
-                    "Invalid archive_endpoint URL: {}",
-                    archive_endpoint
-                ))
+                .unwrap_or_else(|_| panic!("Invalid archive_endpoint URL: {}", archive_endpoint))
                 .to_string(),
             check_endpoint: Url::parse(&check_endpoint)
-                .expect(&format!("Invalid check_endpoint URL: {}", check_endpoint))
+                .unwrap_or_else(|_| panic!("Invalid check_endpoint URL: {}", check_endpoint))
                 .to_string(),
             retry_policy: ExponentialBackoff::builder().build_with_max_retries(max_request_retries),
             archive_threshold_timestamp: (Utc::now()
@@ -106,7 +103,7 @@ impl WaybackMachineClient {
                 .unwrap(),
         )
         .with(RetryTransientMiddleware::new_with_policy(
-            client_config.retry_policy.clone(),
+            client_config.retry_policy,
         ))
         .build();
         WaybackMachineClient {
