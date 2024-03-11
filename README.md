@@ -18,5 +18,4 @@ Example usage:
 ```bash
 echo "https://www.example.com" | archive-url
 ```
-This will archive the URL "https://www.example.com".
 
