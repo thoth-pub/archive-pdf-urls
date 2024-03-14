@@ -9,14 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
     - name: Publish
-      uses: actions-rs/cargo@v1
-      with:
-        command: publish
-        args: --token ${{ secrets.CRATES_TOKEN }}
+      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}
   publish-lib:
     runs-on: ubuntu-latest
     defaults:
@@ -24,11 +18,5 @@ jobs:
         working-directory: ./waybackmachine-client
     steps:
     - uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
     - name: Publish
-      uses: actions-rs/cargo@v1
-      with:
-        command: publish
-        args: --token ${{ secrets.CRATES_TOKEN }}
+      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}

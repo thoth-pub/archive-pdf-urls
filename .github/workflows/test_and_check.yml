@@ -13,10 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build binary
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --verbose
+      run: cargo build --verbose
   test-lib:
     runs-on: ubuntu-latest
     defaults:
@@ -24,37 +21,17 @@ jobs:
         working-directory: ./waybackmachine-client
     steps:
     - uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
-      with:
-          toolchain: stable
     - name: Run tests
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --workspace --verbose
+      run: cargo test --workspace --verbose
   lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
-      with:
-          toolchain: stable
     - name: Run linting
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: --all --all-targets --all-features -- -D warnings
+      run: cargo clippy --all --all-targets --all-features -- -D warnings
   format_check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            components: rustfmt
-            override: true
       - name: Run format
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
