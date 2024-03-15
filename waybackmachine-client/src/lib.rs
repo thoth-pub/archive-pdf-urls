@@ -193,7 +193,6 @@ impl WaybackMachineClient {
             .await
             .map_or(to_archive.url.clone(), |response| response.url().clone());
 
-
         if let Ok(recent_archive_url) = self.check_recent_archive_exists(to_check.as_str()).await {
             return Ok(ArchiveResult::RecentArchiveExists(recent_archive_url));
         }
