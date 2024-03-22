@@ -19,3 +19,8 @@ Example usage:
 archive-pdf-urls file.pdf --exclude https://some.pattern/\*
 ```
 
+### Docker usage
+
+```bash
+docker run --rm -v ./file.pdf:/file.pdf ghcr.io/thoth-pub/archive-pdf-urls file.pdf
+```
