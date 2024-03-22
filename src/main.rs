@@ -1,6 +1,7 @@
-use clap::{crate_authors, crate_version, Arg, Command};
+use clap::{crate_authors, crate_version, Arg, ArgAction, Command};
 use log::{error, info};
 use lopdf::{Dictionary, Document, Object};
+use regex::Regex;
 use std::collections::HashSet;
 use waybackmachine_client::{ArchiveResult, ClientConfig, Error, WaybackMachineClient};
 
@@ -13,8 +14,15 @@ fn cli() -> Command {
             Arg::new("file")
                 .value_name("FILE")
                 .help("Sets the input PDF file to use")
-                .required(true)
-                .index(1),
+                .required(true),
+        )
+        .arg(
+            Arg::new("exclude")
+                .long("exclude")
+                .value_name("PATTERN")
+                .help("Excludes URLs matching the pattern")
+                .required(false)
+                .action(ArgAction::Append),
         )
 }
 
@@ -33,12 +41,22 @@ async fn main() {
             std::process::exit(1);
         }
     };
+    let regex_patterns: Vec<Regex> = args
+        .get_many::<String>("exclude")
+        .unwrap_or_default()
+        .map(|pattern| Regex::new(pattern).expect("Invalid regex pattern"))
+        .collect();
 
     let links_set = extract_links(doc);
     let client = WaybackMachineClient::new(ClientConfig::default());
 
     let mut exit_code = 0;
     for url in links_set.into_iter() {
+        if regex_patterns.iter().any(|regex| regex.is_match(&url)) {
+            info!("Skipped: {}", url);
+            continue;
+        }
+
         match client.archive_url(&url).await {
             Ok(ArchiveResult::Archived(archive_url)) => {
                 info!("Archived: {} – {}", url, archive_url)

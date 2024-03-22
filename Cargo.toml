@@ -15,5 +15,6 @@ clap = {  version = "4.5.3", features = ["cargo"] }
 env_logger = "0.11.3"
 log = "0.4.21"
 lopdf = "0.32.0"
+regex = "1.10.3"
 tokio = { version = "1.36.0", features = ["full"] }
 waybackmachine-client = { version = "0.1.0", path = "waybackmachine-client"}

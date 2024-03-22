@@ -1,13 +1,13 @@
-# Archive URL
+# Archive PDF URLs
 
-This simple command-line tool archives URLs using the Wayback Machine.
+This command-line tool extracts URLs from a PDF file and archives them using the Wayback Machine.
 
 ## Installation
 
 You can build and install the tool using Cargo:
 
 ```bash
-cargo install archive-url
+cargo install archive-pdf-urls
 ```
 
 ## Usage
@@ -16,6 +16,6 @@ The tool reads URLs from standard input, one URL per line, and archives them usi
 
 Example usage:
 ```bash
-echo "https://www.example.com" | archive-url
+archive-pdf-urls file.pdf --exclude https://some.pattern/\*
 ```
 

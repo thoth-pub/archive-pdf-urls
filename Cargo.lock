@@ -103,6 +103,7 @@ dependencies = [
  "env_logger",
  "log",
  "lopdf",
+ "regex",
  "tokio",
  "waybackmachine-client",
 ]
