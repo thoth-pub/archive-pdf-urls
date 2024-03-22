@@ -1,4 +1,4 @@
-FROM clux/muslrust:1.76.0 as build
+FROM clux/muslrust:1.77.0-stable as build
 
 # Get source
 COPY . .
@@ -13,5 +13,10 @@ FROM scratch
 COPY --from=build \
     /volume/target/x86_64-unknown-linux-musl/release/archive-pdf-urls /
 
-# Make thoth our default binary
+# Get CA certificates
+COPY --from=build \
+    /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+
+# Make archive-pdf-urls our default binary
 ENTRYPOINT ["/archive-pdf-urls"]
