@@ -27,6 +27,9 @@ impl ArchivableUrl {
             Host::Domain(domain) if domain.contains("localhost") => {
                 return Err(Error::InvalidUrl(self.url.to_string()));
             }
+            Host::Domain(domain) if domain.contains("archive.org") => {
+                return Err(Error::ExcludedUrl(self.url.to_string()));
+            }
             Host::Ipv4(ipv4)
                 if ipv4.is_loopback()
                     || ipv4.is_private()

@@ -2,7 +2,7 @@ use clap::{crate_authors, crate_version, Arg, Command};
 use log::{error, info};
 use lopdf::{Dictionary, Document, Object};
 use std::collections::HashSet;
-use waybackmachine_client::{ArchiveResult, ClientConfig, WaybackMachineClient};
+use waybackmachine_client::{ArchiveResult, ClientConfig, Error, WaybackMachineClient};
 
 fn cli() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
@@ -45,6 +45,9 @@ async fn main() {
             }
             Ok(ArchiveResult::RecentArchiveExists(archive_url)) => {
                 info!("Skipped: {} – {}", url, archive_url)
+            }
+            Err(Error::ExcludedUrl(url)) => {
+                info!("Skipped: {}", url)
             }
             Err(e) => {
                 error!("{}", e);
