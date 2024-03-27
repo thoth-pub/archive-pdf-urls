@@ -2,6 +2,9 @@
 
 This command-line tool extracts URLs from a PDF file and archives them using the Wayback Machine.
 
+[![Build status](https://github.com/thoth-pub/archive-pdf-urls/workflows/test-and-check/badge.svg)](https://github.com/thoth-pub/archive-pdf-urls/actions)
+[![Crates.io](https://img.shields.io/crates/v/archive-pdf-urls.svg)](https://crates.io/crates/archive-pdf-urls)
+
 ## Installation
 
 You can build and install the tool using Cargo:
