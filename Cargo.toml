@@ -5,6 +5,7 @@ authors = ["Javier Arias <javi@openbookpublishers.com>"]
 edition = "2021"
 license = "Apache-2.0"
 description = "Extract all links from a PDF and archive the URLs in the Internet Archive's Wayback Machine"
+repository = "https://github.com/thoth-pub/archive-pdf-urls/"
 readme = "README.md"
 
 [workspace]
