@@ -7,7 +7,6 @@ use chrono::{NaiveDateTime, TimeDelta, Utc};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use serde::Deserialize;
-use std::collections::HashMap;
 use url::Url;
 
 /// Maximum number of allowed request retries attempts.
@@ -22,22 +21,13 @@ const DEFAULT_USER_AGENT: &str =
     "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0";
 
 /// Endpoint for the Wayback Machine archiving service
-const WAYBACK_MACHINE_ARCHIVE_ENDPOINT: &str = "https://web.archive.org/save/";
+pub const WAYBACK_MACHINE_ARCHIVE_ENDPOINT: &str = "https://web.archive.org/save/";
 /// Endpoint to check if an archive is present in the Wayback Machine
-const WAYBACK_MACHINE_CHECK_ENDPOINT: &str = "https://archive.org/wayback/available?url=";
+pub const WAYBACK_MACHINE_CHECK_ENDPOINT: &str =
+    "https://web.archive.org/cdx/search/cdx?fl=timestamp&limit=-1&output=json&url=";
 
 #[derive(Debug, Deserialize)]
-struct WaybackCheckResponse {
-    archived_snapshots: Option<HashMap<String, ArchivedSnapshot>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ArchivedSnapshot {
-    status: String,
-    available: bool,
-    timestamp: String,
-    url: String,
-}
+struct WaybackCheckResponse(Vec<Vec<String>>);
 
 /// Configuration for the Wayback Machine client
 pub struct ClientConfig {
@@ -51,7 +41,7 @@ pub struct ClientConfig {
 /// Status of the archive request
 pub enum ArchiveResult {
     Archived(String),
-    RecentArchiveExists(String),
+    RecentArchiveExists,
 }
 
 impl ClientConfig {
@@ -126,9 +116,9 @@ impl WaybackMachineClient {
     /// If no recent archive is found or the found archive is older than the threshold,
     /// it returns Err(Error::NoRecentArchive).
     ///
-    /// https://archive.org/help/wayback_api.php
+    /// https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server
     ///
-    async fn check_recent_archive_exists(&self, url: &str) -> Result<String, Error> {
+    async fn check_recent_archive_exists(&self, url: &str) -> Result<(), Error> {
         let to_check = ArchivableUrl::parse(url)?;
         let response = self
             .http_client
@@ -140,22 +130,18 @@ impl WaybackMachineClient {
             .await
             .map_err(|e| Error::CannotCheckArchive(e.to_string()))?;
 
-        if let Some(snapshots) = response.archived_snapshots {
-            if let Some((_, snapshot)) = snapshots
-                .iter()
-                .max_by_key(|(_, snapshot)| &snapshot.timestamp)
-            {
+        match &response.0[..] {
+            [_, timestamp] if timestamp.len() == 1 => {
                 let snapshot_timestamp =
-                    NaiveDateTime::parse_from_str(&snapshot.timestamp, "%Y%m%d%H%M%S")?;
-                if snapshot_timestamp > self.client_config.archive_threshold_timestamp
-                    && snapshot.available
-                    && snapshot.status.eq("200")
-                {
-                    return Ok(snapshot.url.clone());
+                    NaiveDateTime::parse_from_str(&timestamp[0], "%Y%m%d%H%M%S")?;
+                if snapshot_timestamp > self.client_config.archive_threshold_timestamp {
+                    Ok(())
+                } else {
+                    Err(Error::NoRecentArchive(url.to_string()))
                 }
             }
+            _ => Err(Error::NoRecentArchive(url.to_string())),
         }
-        Err(Error::NoRecentArchive(url.to_string()))
     }
 
     /// Checks if a recent Wayback Machine archive exists for the given URL
@@ -193,8 +179,12 @@ impl WaybackMachineClient {
             .await
             .map_or(to_archive.url.clone(), |response| response.url().clone());
 
-        if let Ok(recent_archive_url) = self.check_recent_archive_exists(to_check.as_str()).await {
-            return Ok(ArchiveResult::RecentArchiveExists(recent_archive_url));
+        if self
+            .check_recent_archive_exists(to_check.as_str())
+            .await
+            .is_ok()
+        {
+            return Ok(ArchiveResult::RecentArchiveExists);
         }
 
         let response = self
@@ -225,7 +215,7 @@ mod tests {
     use serde_json::{json, Value};
 
     const ARCHIVE_ROOT_PATH: &str = "/save/";
-    const CHECK_ROOT_PATH: &str = "/wayback/available?url=";
+    const CHECK_ROOT_PATH: &str = "/cdx/search/cdx?fl=timestamp&limit=-1&output=json&url=";
     const MAX_REQUEST_RETRIES: u32 = 3;
 
     async fn mock_server() -> (ServerGuard, WaybackMachineClient) {
@@ -348,17 +338,7 @@ mod tests {
             .to_string();
         let (mut server, wayback_client) = mock_server().await;
 
-        let snapshot: Value = json!({
-            "url": to_archive,
-            "archived_snapshots": {
-                "closest": {
-                    "status": "200",
-                    "available": true,
-                    "url": format!("http://web.archive.org/web/{}/{}", snapshot_timestamp, to_archive),
-                    "timestamp": snapshot_timestamp
-                }
-            }
-        });
+        let snapshot: Value = json!([["timestamp"], [snapshot_timestamp]]);
         let mock = server
             .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
             .with_status(200)
@@ -381,17 +361,7 @@ mod tests {
             .to_string();
         let (mut server, wayback_client) = mock_server().await;
 
-        let snapshot: Value = json!({
-            "url": to_archive,
-            "archived_snapshots": {
-                "closest": {
-                    "status": "200",
-                    "available": true,
-                    "url": format!("http://web.archive.org/web/{}/{}", snapshot_timestamp, to_archive),
-                    "timestamp": snapshot_timestamp
-                }
-            }
-        });
+        let snapshot: Value = json!([["timestamp"], [snapshot_timestamp]]);
         let mock = server
             .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
             .with_status(200)
@@ -411,10 +381,7 @@ mod tests {
         let to_archive = "https://example.com/";
         let (mut server, wayback_client) = mock_server().await;
 
-        let snapshot: Value = json!({
-            "url": to_archive,
-            "archived_snapshots": {}
-        });
+        let snapshot: Value = json!([]);
         let mock = server
             .mock("GET", &format!("{}{}", CHECK_ROOT_PATH, to_archive)[..])
             .with_status(200)

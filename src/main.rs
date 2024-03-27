@@ -61,8 +61,8 @@ async fn main() {
             Ok(ArchiveResult::Archived(archive_url)) => {
                 info!("Archived: {} – {}", url, archive_url)
             }
-            Ok(ArchiveResult::RecentArchiveExists(archive_url)) => {
-                info!("Skipped: {} – {}", url, archive_url)
+            Ok(ArchiveResult::RecentArchiveExists) => {
+                info!("Skipped: {}", url)
             }
             Err(Error::ExcludedUrl(url)) => {
                 info!("Skipped: {}", url)
