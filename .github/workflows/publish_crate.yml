@@ -5,17 +5,18 @@ on:
     types: [published]
 
 jobs:
-  publish-bin:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Publish
-      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}
   publish-lib:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./waybackmachine-client
+    steps:
+    - uses: actions/checkout@v4
+    - name: Publish
+      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}
+  publish-bin:
+    runs-on: ubuntu-latest
+    needs: publish-lib
     steps:
     - uses: actions/checkout@v4
     - name: Publish

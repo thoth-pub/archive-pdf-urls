@@ -2,6 +2,9 @@
 
 This Rust crate provides a client for interacting with the Wayback Machine, allowing users to archive URLs.
 
+[![Build status](https://github.com/thoth-pub/archive-pdf-urls/workflows/test-and-check/badge.svg)](https://github.com/thoth-pub/archive-pdf-urls/actions)
+[![Crates.io](https://img.shields.io/crates/v/waybackmachine-client.svg)](https://crates.io/crates/waybackmachine-client)
+
 ## Installation
 
 ```bash
