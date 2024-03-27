@@ -1,6 +1,6 @@
 [package]
 name = "archive-pdf-urls"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Javier Arias <javi@openbookpublishers.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -17,4 +17,4 @@ log = "0.4.21"
 lopdf = "0.32.0"
 regex = "1.10.4"
 tokio = { version = "1.36.0", features = ["full"] }
-waybackmachine-client = { version = "0.1.0", path = "waybackmachine-client"}
+waybackmachine-client = { version = "0.2.0", path = "waybackmachine-client"}
