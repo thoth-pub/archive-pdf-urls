@@ -10,7 +10,7 @@ use serde::Deserialize;
 use url::Url;
 
 /// Maximum number of allowed request retries attempts.
-const DEFAULT_MAX_REQUEST_RETRIES: u32 = 5;
+const DEFAULT_MAX_REQUEST_RETRIES: u32 = 10;
 
 /// Default threshold for considering an archive as recent, in days.
 /// URLs with archives older than this threshold will be re-archived.

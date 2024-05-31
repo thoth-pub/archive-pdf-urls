@@ -1,5 +1,5 @@
 use clap::{crate_authors, crate_version, Arg, ArgAction, Command};
-use log::{error, info};
+use log::{error, info, warn};
 use lopdf::{Dictionary, Document, Object};
 use regex::Regex;
 use std::collections::HashSet;
@@ -48,6 +48,9 @@ async fn main() {
         .collect();
 
     let links_set = extract_links(doc);
+    if links_set.is_empty() {
+        warn!("No page annotations found in this PDF file");
+    }
     let client = WaybackMachineClient::new(ClientConfig::default());
 
     let mut exit_code = 0;

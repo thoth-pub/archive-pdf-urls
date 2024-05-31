@@ -30,6 +30,9 @@ impl ArchivableUrl {
             Host::Domain(domain) if domain.contains("archive.org") => {
                 return Err(Error::ExcludedUrl(self.url.to_string()));
             }
+            Host::Domain(domain) if domain.contains("jstor.org") => {
+                return Err(Error::ExcludedUrl(self.url.to_string()));
+            }
             Host::Ipv4(ipv4)
                 if ipv4.is_loopback()
                     || ipv4.is_private()
@@ -133,5 +136,21 @@ mod tests {
         let result = ArchivableUrl::parse(url);
         assert!(result.is_err());
         assert_eq!(result.err(), Some(Error::InvalidUrl(url.to_string())));
+    }
+
+    #[test]
+    fn wayback_url() {
+        let url = "https://archive.org/some-book";
+        let result = ArchivableUrl::parse(url);
+        assert!(result.is_err());
+        assert_eq!(result.err(), Some(Error::ExcludedUrl(url.to_string())));
+    }
+
+    #[test]
+    fn jstor_url() {
+        let url = "https://jstor.org/some-book";
+        let result = ArchivableUrl::parse(url);
+        assert!(result.is_err());
+        assert_eq!(result.err(), Some(Error::ExcludedUrl(url.to_string())));
     }
 }
