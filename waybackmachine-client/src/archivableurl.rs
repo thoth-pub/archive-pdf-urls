@@ -7,6 +7,9 @@ pub struct ArchivableUrl {
     pub url: Url,
 }
 
+/// List of domains that block wayback requests
+const EXCLUDED_DOMAINS: &[&str] = &["archive.org", "jstor.org", "diw.de"];
+
 impl ArchivableUrl {
     /// Parses and validates the URL for archiving
     pub fn parse(url: &str) -> Result<Self, Error> {
@@ -24,14 +27,16 @@ impl ArchivableUrl {
 
         // Check if the host is excluded
         match host {
-            Host::Domain(domain) if domain.contains("localhost") => {
-                return Err(Error::InvalidUrl(self.url.to_string()));
-            }
-            Host::Domain(domain) if domain.contains("archive.org") => {
-                return Err(Error::ExcludedUrl(self.url.to_string()));
-            }
-            Host::Domain(domain) if domain.contains("jstor.org") => {
-                return Err(Error::ExcludedUrl(self.url.to_string()));
+            Host::Domain(domain) => {
+                if domain.contains("localhost") {
+                    return Err(Error::InvalidUrl(self.url.to_string()));
+                }
+
+                for &pattern in EXCLUDED_DOMAINS {
+                    if domain.contains(pattern) {
+                        return Err(Error::ExcludedUrl(self.url.to_string()));
+                    }
+                }
             }
             Host::Ipv4(ipv4)
                 if ipv4.is_loopback()
@@ -152,5 +157,15 @@ mod tests {
         let result = ArchivableUrl::parse(url);
         assert!(result.is_err());
         assert_eq!(result.err(), Some(Error::ExcludedUrl(url.to_string())));
+    }
+
+    #[test]
+    fn excluded_domains() {
+        for &domain in EXCLUDED_DOMAINS {
+            let url = format!("https://{}/some-path", domain);
+            let result = ArchivableUrl::parse(&url);
+            assert!(result.is_err());
+            assert_eq!(result.err(), Some(Error::ExcludedUrl(url)));
+        }
     }
 }
