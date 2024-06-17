@@ -1,7 +1,7 @@
 [package]
 name = "archive-pdf-urls"
-version = "0.4.0"
-authors = ["Javier Arias <javi@openbookpublishers.com>"]
+version = "0.4.1"
+authors = ["Javier Arias <javi@thoth.pub>"]
 edition = "2021"
 license = "Apache-2.0"
 description = "Extract all links from a PDF and archive the URLs in the Internet Archive's Wayback Machine"
@@ -12,10 +12,10 @@ readme = "README.md"
 members = ["waybackmachine-client"]
 
 [dependencies]
-clap = {  version = "4.5.4", features = ["cargo"] }
+clap = {  version = "4.5.7", features = ["cargo"] }
 env_logger = "0.11.3"
 log = "0.4.21"
 lopdf = "0.32.0"
-regex = "1.10.4"
-tokio = { version = "1.36.0", features = ["full"] }
-waybackmachine-client = { version = "=0.4.0", path = "waybackmachine-client"}
+regex = "1.10.5"
+tokio = { version = "1.38.0", features = ["full"] }
+waybackmachine-client = { version = "=0.4.1", path = "waybackmachine-client"}

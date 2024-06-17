@@ -1,4 +1,4 @@
-FROM clux/muslrust:1.77.0-stable as build
+FROM clux/muslrust:1.79.0-stable as build
 
 # Get source
 COPY . .
