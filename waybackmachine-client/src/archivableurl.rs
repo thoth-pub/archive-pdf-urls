@@ -8,7 +8,13 @@ pub struct ArchivableUrl {
 }
 
 /// List of domains that block wayback requests
-const EXCLUDED_DOMAINS: &[&str] = &["archive.org", "jstor.org", "diw.de", "youtube.com"];
+const EXCLUDED_DOMAINS: &[&str] = &[
+    "archive.org",
+    "jstor.org",
+    "diw.de",
+    "youtube.com",
+    "plato.stanford.edu",
+];
 
 impl ArchivableUrl {
     /// Parses and validates the URL for archiving
