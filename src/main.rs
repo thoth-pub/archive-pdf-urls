@@ -102,7 +102,7 @@ fn is_link_annotation(annotation: &Dictionary) -> bool {
         .get(b"Subtype")
         .ok()
         .and_then(|subtype| subtype.as_name().ok())
-        .map_or(false, |subtype| subtype == b"Link")
+        .is_some_and(|subtype| subtype == b"Link")
 }
 
 // Extract the destination URI from a link annotation

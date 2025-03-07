@@ -14,6 +14,19 @@ const EXCLUDED_DOMAINS: &[&str] = &[
     "diw.de",
     "youtube.com",
     "plato.stanford.edu",
+    "muse.jhu.edu",
+    "read.dukeupress.edu",
+    "academic.oup.com",
+    "onlinelibrary.wiley.com",
+    "genius.com",
+    "taylorfrancis.com",
+    "tandfonline.com",
+    "iwaponline.com",
+    "link.springer.com",
+    "journals.sagepub.com",
+    "journals.openedition.org",
+    "sciencedirect.com",
+    "annualreviews.org",
 ];
 
 impl ArchivableUrl {
