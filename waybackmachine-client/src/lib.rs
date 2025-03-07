@@ -172,12 +172,17 @@ impl WaybackMachineClient {
     pub async fn archive_url(&self, url: &str) -> Result<ArchiveResult, Error> {
         let to_archive = ArchivableUrl::parse(url)?;
         // get the latest location in case of a redirect
+        // check that the latest location is actually archivable
         let to_check = self
             .http_client
             .get(to_archive.as_str())
             .send()
             .await
-            .map_or(to_archive.url.clone(), |response| response.url().clone());
+            .map_or(Ok(to_archive.clone()), |response| {
+                ArchivableUrl::parse(response.url().as_str())
+            })?
+            .url
+            .clone();
 
         if self
             .check_recent_archive_exists(to_check.as_str())

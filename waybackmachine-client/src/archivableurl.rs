@@ -2,6 +2,7 @@ use crate::Error;
 use std::fmt;
 use url::{Host, Url};
 
+#[derive(Clone)]
 /// Validator for archivable URLs
 pub struct ArchivableUrl {
     pub url: Url,
