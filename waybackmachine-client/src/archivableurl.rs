@@ -29,6 +29,7 @@ const EXCLUDED_DOMAINS: &[&str] = &[
     "sciencedirect.com",
     "annualreviews.org",
     "mit.edu",
+    "ucpress.edu",
 ];
 
 impl ArchivableUrl {
